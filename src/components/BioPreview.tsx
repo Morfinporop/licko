@@ -23,10 +23,16 @@ export function BioPreview({ profile, username, links, socials, theme }: BioPrev
     return { backgroundColor: theme.bg_color };
   };
 
+  const getCardBg = () => {
+    if (theme.card_bg_type === 'image' && theme.card_bg_image) {
+      return { backgroundImage: `url(${theme.card_bg_image})`, backgroundSize: 'cover', backgroundPosition: 'center' };
+    }
+    return { backgroundColor: theme.card_bg_color || `rgba(255,255,255,${theme.card_opacity || 0.15})` };
+  };
+
   const getCardStyle = (): React.CSSProperties => {
     const borderRadius = theme.card_border_radius || 16;
     const blur = theme.card_blur || 12;
-    const opacity = theme.card_opacity || 0.15;
     const width = theme.card_width || 500;
     const maxWidth = theme.card_max_width || 1200;
     const padding = theme.card_padding || 32;
@@ -45,12 +51,12 @@ export function BioPreview({ profile, username, links, socials, theme }: BioPrev
     return {
       borderRadius: `${borderRadius}px`,
       backdropFilter: `blur(${blur}px)`,
-      backgroundColor: `rgba(255,255,255,${opacity})`,
       border: `${borderWidth}px solid ${borderColor}`,
       boxShadow: combinedShadow,
       width: `${width}px`,
-      maxWidth: `${maxWidth}px`,
-      padding: `${padding}px`
+      maxWidth: `calc(100% - 32px)`,
+      padding: `${padding}px`,
+      ...getCardBg()
     };
   };
 
@@ -87,11 +93,8 @@ export function BioPreview({ profile, username, links, socials, theme }: BioPrev
     return 'text-gray-300 hover:text-white hover:bg-white/5 border-transparent bg-transparent';
   };
 
-  const marginTop = theme.card_margin_top || 48;
-  const marginBottom = theme.card_margin_bottom || 48;
-
   return (
-    <div className="min-h-full w-full relative bio-preview overflow-hidden flex items-center justify-center" style={getBackground()}>
+    <div className="min-h-full w-full relative bio-preview flex items-center justify-center p-4 overflow-hidden" style={getBackground()}>
       {/* Overlay */}
       <div className="absolute inset-0 bg-black" style={{ opacity: theme.bg_overlay_opacity }} />
       
@@ -100,17 +103,10 @@ export function BioPreview({ profile, username, links, socials, theme }: BioPrev
         <style dangerouslySetInnerHTML={{ __html: `.bio-preview { ${theme.custom_css} }` }} />
       )}
 
-      {/* Content */}
-      <div 
-        className={`relative z-10 w-full px-6 flex flex-col items-center ${spacing}`}
-        style={{ 
-          paddingTop: `${marginTop}px`, 
-          paddingBottom: `${marginBottom}px`,
-          maxWidth: `${theme.card_max_width || 1200}px`
-        }}
-      >
-        {/* Avatar & Info */}
-        <div style={getCardStyle()} className="flex flex-col items-center text-center mx-auto w-full">
+      {/* Content Container */}
+      <div className="relative z-10 w-full flex flex-col items-center">
+        {/* Main Card */}
+        <div style={getCardStyle()} className="flex flex-col items-center text-center">
           {profile.avatar_url ? (
             <img
               src={profile.avatar_url}
@@ -134,30 +130,28 @@ export function BioPreview({ profile, username, links, socials, theme }: BioPrev
           {profile.bio && (
             <p className="text-sm text-gray-300 leading-relaxed">{profile.bio}</p>
           )}
-        </div>
 
-        {/* Links */}
-        {links.filter(l => l.is_active).length > 0 && (
-          <div className={`flex flex-col ${spacing} w-full`}>
-            {links.filter(l => l.is_active).map(link => (
-              <button
-                key={link.id}
-                className={`w-full text-center transition-all duration-300 cursor-pointer ${getButtonClass()}`}
-                style={getButtonStyles()}
-              >
-                <div className="flex items-center justify-center gap-3">
-                  {link.icon && <span className="text-lg">{link.icon}</span>}
-                  <span>{link.title}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
+          {/* Links inside the card */}
+          {links.filter(l => l.is_active).length > 0 && (
+            <div className={`flex flex-col ${spacing} w-full mt-6`}>
+              {links.filter(l => l.is_active).map(link => (
+                <button
+                  key={link.id}
+                  className={`w-full text-center transition-all duration-300 cursor-pointer ${getButtonClass()}`}
+                  style={getButtonStyles()}
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    {link.icon && <span className="text-lg">{link.icon}</span>}
+                    <span>{link.title}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
 
-        {/* Social Links */}
-        {socials.length > 0 && (
-          <div style={getCardStyle()} className="mx-auto w-full">
-            <div className="flex items-center justify-center gap-3 flex-wrap">
+          {/* Socials inside the card */}
+          {socials.length > 0 && (
+            <div className="flex items-center justify-center gap-3 flex-wrap mt-6 pt-6 border-t border-white/10 w-full">
               {socials.map(social => (
                 <div
                   key={social.id}
@@ -168,14 +162,21 @@ export function BioPreview({ profile, username, links, socials, theme }: BioPrev
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Footer */}
-        <div className="text-center mt-6" style={{ width: `${Math.min(theme.card_width || 500, theme.card_max_width || 1200)}px`, maxWidth: '100%' }}>
-          <p className="text-xs text-gray-600">
-            Made with <span className="text-green-500">BioLink</span>
-          </p>
+        {/* Centered Footer below the card */}
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2 shadow-2xl">
+            <svg className="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Просмотры</span>
+          </div>
+          <div className="text-[10px] font-bold text-gray-600 uppercase tracking-tighter hover:text-green-500/50 transition-colors cursor-default">
+            Made with BioLink
+          </div>
         </div>
       </div>
     </div>

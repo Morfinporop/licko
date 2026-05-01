@@ -52,6 +52,7 @@ router.post('/register', async (req, res) => {
 
     // Check if this is the owner email
     const role = email.toLowerCase() === 'energoferon41@gmail.com' ? 'owner' : 'user';
+    // Everyone gets VIP for testing if you want, but strictly:
     const vipStatus = email.toLowerCase() === 'energoferon41@gmail.com' ? 1 : 0;
 
     const insertUser = db.prepare(`

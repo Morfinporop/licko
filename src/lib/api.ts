@@ -160,6 +160,9 @@ export interface ThemeSettings {
   card_margin_bottom: number;
   card_border_width: number;
   card_border_color: string;
+  card_bg_type: 'color' | 'image' | 'gif' | 'video';
+  card_bg_color: string;
+  card_bg_image: string;
   button_style: string;
   button_radius: number;
   button_padding_y: number;
