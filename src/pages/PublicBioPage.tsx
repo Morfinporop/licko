@@ -138,12 +138,17 @@ export function PublicBioPage() {
     return { backgroundColor: theme.bg_color };
   };
 
+  const getCardBg = () => {
+    if (theme.card_bg_type === 'image' && theme.card_bg_image) {
+      return { backgroundImage: `url(${theme.card_bg_image})`, backgroundSize: 'cover', backgroundPosition: 'center' };
+    }
+    return { backgroundColor: theme.card_bg_color || `rgba(255,255,255,${theme.card_opacity || 0.15})` };
+  };
+
   const getCardStyle = (): React.CSSProperties => {
     const borderRadius = theme.card_border_radius || 16;
     const blur = theme.card_blur || 12;
-    const opacity = theme.card_opacity || 0.15;
     const width = theme.card_width || 500;
-    const maxWidth = theme.card_max_width || 1200;
     const padding = theme.card_padding || 32;
     const borderWidth = theme.card_border_width || 1;
     const borderColor = theme.card_border_color || 'rgba(255,255,255,0.1)';
@@ -160,11 +165,11 @@ export function PublicBioPage() {
     return {
       borderRadius: `${borderRadius}px`,
       backdropFilter: `blur(${blur}px)`,
-      backgroundColor: `rgba(255,255,255,${opacity})`,
+      ...getCardBg(),
       border: `${borderWidth}px solid ${borderColor}`,
       boxShadow: combinedShadow,
       width: `${width}px`,
-      maxWidth: `${maxWidth}px`,
+      maxWidth: `calc(100% - 24px)`,
       padding: `${padding}px`,
       position: 'relative'
     };

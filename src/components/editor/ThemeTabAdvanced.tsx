@@ -19,14 +19,12 @@ const GRADIENTS = [
   { name: 'Midnight', value: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0a0a0a 100%)' }
 ];
 
-const BG_COLORS = ['#000000', '#0a0a0a', '#0f0f0f', '#1a1a1a', '#050505'];
-
 export function ThemeTab({ theme, onUpdate }: ThemeTabProps) {
   const [mode, setMode] = useState<'visual' | 'code'>('visual');
   const [localTheme, setLocalTheme] = useState(theme);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [uploadingMusic, setUploadingMusic] = useState(false);
+  const [uploadingCardBg, setUploadingCardBg] = useState(false);
   const [playlist, setPlaylist] = useState<any[]>([]);
   
   const { isVip, isAdmin, isOwner } = useAuthStore();
@@ -81,6 +79,21 @@ export function ThemeTab({ theme, onUpdate }: ThemeTabProps) {
       toast.error('Ошибка загрузки музыки');
     } finally {
       setUploadingMusic(false);
+    }
+  };
+
+  const handleCardBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCardBg(true);
+    try {
+      const res = await profileApi.uploadCustomBg(file);
+      setLocalTheme((prev) => ({ ...prev, card_bg_image: res.data.bg_custom_image, card_bg_type: 'image' }));
+      toast.success('Фон карточки загружен');
+    } catch {
+      toast.error('Ошибка загрузки');
+    } finally {
+      setUploadingCardBg(false);
     }
   };
 
@@ -243,6 +256,72 @@ export function ThemeTab({ theme, onUpdate }: ThemeTabProps) {
                   onChange={e => setLocalTheme(p => ({ ...p, card_bg_color: e.target.value }))}
                 />
               )}
+
+              {localTheme.card_bg_type === 'image' && (
+                <div className="space-y-3">
+                  {localTheme.card_bg_image ? (
+                    <div className="relative rounded-xl overflow-hidden border border-white/10 h-28">
+                      <img src={localTheme.card_bg_image} alt="Card BG" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => setLocalTheme((p) => ({ ...p, card_bg_image: '' }))}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-red-500/80 text-white flex items-center justify-center"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer block">
+                      <div className="border-2 border-dashed border-white/10 rounded-xl p-5 text-center hover:border-green-500/30 hover:bg-green-500/[0.02]">
+                        {uploadingCardBg ? (
+                          <div className="w-6 h-6 border-2 border-t-green-500 rounded-full animate-spin mx-auto" />
+                        ) : (
+                          <p className="text-gray-400 text-xs font-bold uppercase">Загрузить картинку карточки</p>
+                        )}
+                      </div>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleCardBgUpload} />
+                    </label>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-500 tracking-tighter mb-2 block">Прозрачность {Math.round((localTheme.card_opacity || 0.15) * 100)}%</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="0.8"
+                    step="0.01"
+                    value={localTheme.card_opacity || 0.15}
+                    onChange={(e) => setLocalTheme((p) => ({ ...p, card_opacity: parseFloat(e.target.value) }))}
+                    className="w-full h-1.5 rounded-full bg-white/10 appearance-none cursor-pointer accent-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-500 tracking-tighter mb-2 block">Blur {localTheme.card_blur || 12}px</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="30"
+                    step="1"
+                    value={localTheme.card_blur || 12}
+                    onChange={(e) => setLocalTheme((p) => ({ ...p, card_blur: parseInt(e.target.value) }))}
+                    className="w-full h-1.5 rounded-full bg-white/10 appearance-none cursor-pointer accent-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-500 tracking-tighter mb-2 block">Скругление {localTheme.card_border_radius || 16}px</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="50"
+                    step="1"
+                    value={localTheme.card_border_radius || 16}
+                    onChange={(e) => setLocalTheme((p) => ({ ...p, card_border_radius: parseInt(e.target.value) }))}
+                    className="w-full h-1.5 rounded-full bg-white/10 appearance-none cursor-pointer accent-green-500"
+                  />
+                </div>
+              </div>
             </div>
           </GlassCard>
 

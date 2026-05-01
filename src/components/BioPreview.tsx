@@ -34,7 +34,6 @@ export function BioPreview({ profile, username, links, socials, theme }: BioPrev
     const borderRadius = theme.card_border_radius || 16;
     const blur = theme.card_blur || 12;
     const width = theme.card_width || 500;
-    const maxWidth = theme.card_max_width || 1200;
     const padding = theme.card_padding || 32;
     const borderWidth = theme.card_border_width || 1;
     const borderColor = theme.card_border_color || 'rgba(255,255,255,0.1)';
